@@ -645,6 +645,15 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         return cameraState.minZoomRatio
     }
 
+    /**
+     * This method must be called after bindToLifecycle has been called
+     *
+     * @return the min zoom ratio
+     */
+    override fun getHfov(): Double {
+        return cameraState.hfov
+    }
+
     fun convertLinearToRatio(linear: Double): Double {
         // TODO Not sure if this is correct
         return linear * getMaxZoom() / getMinZoom()

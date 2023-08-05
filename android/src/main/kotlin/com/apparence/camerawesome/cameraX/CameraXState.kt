@@ -82,6 +82,30 @@ data class CameraXState(
     val portrait: Boolean
         get() = mainCameraInfos.sensorRotationDegrees % 180 == 0
 
+    val hfov: Double
+        @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
+        get() {
+            // Use Camera2CameraInfo to extract camera characteristics
+            val cameraCharacteristics = Camera2CameraInfo.extractCameraCharacteristics(mainCameraInfos)
+
+            // Extract focal lengths and sensor size
+            val focalLengths = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+            val sensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)
+
+            // Ensure we got the necessary data
+            return if (focalLengths != null && sensorSize != null && focalLengths.isNotEmpty()) {
+                // Use the first focal length if more than one is provided
+                val focalLength = focalLengths[0]
+
+                // Calculate horizontal FOV
+                val sensorWidth = sensorSize.width.toDouble()
+                val horizontalFOV = (2.0 * Math.atan((sensorWidth / (focalLength * 2.0)))) * 180.0 / Math.PI
+                horizontalFOV
+            } else {
+                65.59
+            }
+        }
+
     fun executor(activity: Activity): Executor {
         return ContextCompat.getMainExecutor(activity)
     }

@@ -386,6 +386,11 @@ class CamerawesomePlugin {
     return CameraInterface().getMinZoom();
   }
 
+  /// returns the getHfov
+  static Future<double?> getHfov() {
+    return CameraInterface().getHfov();
+  }
+
   static Future<bool> isMultiCamSupported() {
     return CameraInterface().isMultiCamSupported();
   }

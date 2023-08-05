@@ -791,6 +791,7 @@ interface CameraInterface {
   fun setSensor(sensors: List<PigeonSensor>)
   fun setCorrection(brightness: Double)
   fun getMinZoom(): Double
+  fun getHfov(): Double
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
   fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
@@ -1232,6 +1233,22 @@ interface CameraInterface {
             var wrapped: List<Any?>
             try {
               wrapped = listOf<Any?>(api.getMaxZoom())
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getHfov", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.getHfov())
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }
