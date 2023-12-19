@@ -47,8 +47,14 @@ class CamerawesomePlugin {
 
   static CameraRunningState currentState = CameraRunningState.stopped;
 
+  static const MethodChannel _channel = MethodChannel('dev.flutter.pigeon.CameraInterface.getHfov');
+
   /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
+
+  static Future<double> getHFovIos() async {
+    return await _channel.invokeMethod('getHorizontalFoV');
+  }
 
   static Future<bool?> checkiOSPermissions(
       List<String?> permissionsName) async {

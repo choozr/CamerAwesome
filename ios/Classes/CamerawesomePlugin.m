@@ -8,6 +8,7 @@
 #import "CaptureModeUtils.h"
 #import "FlashModeUtils.h"
 #import "AnalysisController.h"
+#import <AVFoundation/AVFoundation.h>
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
@@ -58,6 +59,20 @@ FlutterEventSink physicalButtonEventSink;
   [orientationChannel setStreamHandler:instance];
   [imageStreamChannel setStreamHandler:instance];
   [physicalButtonChannel setStreamHandler:instance];
+
+  FlutterMethodChannel* channel = [FlutterMethodChannel
+                                 methodChannelWithName:@"dev.flutter.pigeon.CameraInterface.getHfov"
+                                 binaryMessenger:registrar.messenger];
+  [channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+    if ([@"getHorizontalFoV" isEqualToString:call.method]) {
+        double hfov = [instance getFrontCameraHorizontalFoV];
+    result(@(hfov));
+    } else {
+      result(FlutterMethodNotImplemented);
+    }
+  }];
+
+
   
   CameraInterfaceSetup(registrar.messenger, instance);
   AnalysisImageUtilsSetup(registrar.messenger, instance);
@@ -183,6 +198,25 @@ FlutterEventSink physicalButtonEventSink;
   }
   
   return @(YES);
+}
+
+- (double)getFrontCameraHorizontalFoV {
+    AVCaptureDevice *frontCamera = nil;
+
+    // Find the front camera
+    NSArray *devices = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionFront].devices;
+    if (devices.count > 0) {
+        frontCamera = devices.firstObject;
+    }
+
+    if (frontCamera) {
+
+        // Get the active format
+        AVCaptureDeviceFormat *activeFormat = [frontCamera activeFormat];
+        return activeFormat.videoFieldOfView;
+    }
+    
+    return 0; // Default value if front camera or focal length is not available
 }
 
 - (void)refreshWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
