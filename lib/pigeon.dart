@@ -80,7 +80,7 @@ enum CamerAwesomePermission {
   storage,
   camera,
   location,
-  record_audio,
+  recordAudio,
 }
 
 enum AnalysisImageFormat {
@@ -122,6 +122,8 @@ class PreviewSize {
       height: result[1]! as double,
     );
   }
+
+  Size toSize() => Size(width, height);
 }
 
 class ExifPreferences {

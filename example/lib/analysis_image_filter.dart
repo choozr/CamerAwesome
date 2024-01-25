@@ -52,9 +52,9 @@ class _CameraPageState extends State<CameraPage> {
           androidOptions: const AndroidAnalysisOptions.yuv420(
             width: 150,
           ),
-          maxFramesPerSecond: 30,
+          maxFramesPerSecond: 20,
         ),
-        builder: (state, previewSize, previewRect) {
+        builder: (state, preview) {
           return CameraPreviewDisplayer(
             analysisImageStream: _imageStreamController.stream,
           );

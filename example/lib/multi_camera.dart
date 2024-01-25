@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:better_open_file/better_open_file.dart';
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -62,6 +62,7 @@ class _CameraPageState extends State<CameraPage> {
 
     CamerawesomePlugin.isMultiCamSupported().then((value) {
       setState(() {
+        debugPrint("📸 isMultiCamSupported: $value");
         isMultiCamSupported = value;
       });
     });
@@ -80,12 +81,15 @@ class _CameraPageState extends State<CameraPage> {
                     ),
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
-                        sensors: [
-                          // Android only supports two sensors at a time
-                          Sensor.position(SensorPosition.back),
-                          Sensor.position(SensorPosition.front),
-                          if (Platform.isIOS) Sensor.type(SensorType.telephoto),
-                        ],
+                        sensors: (Platform.isIOS)
+                            ? [
+                                Sensor.type(SensorType.telephoto),
+                                Sensor.position(SensorPosition.front),
+                              ]
+                            : [
+                                Sensor.position(SensorPosition.back),
+                                Sensor.position(SensorPosition.front),
+                              ],
                         flashMode: FlashMode.auto,
                         aspectRatio: CameraAspectRatios.ratio_16_9,
                       )
@@ -101,7 +105,7 @@ class _CameraPageState extends State<CameraPage> {
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
                   mediaCapture.captureRequest.when(
-                    single: (single) => OpenFile.open(single.file?.path),
+                    single: (single) => single.file?.open(),
                     multiple: (multiple) => Navigator.of(context).pushNamed(
                       '/gallery',
                       arguments: multiple,
@@ -109,15 +113,15 @@ class _CameraPageState extends State<CameraPage> {
                   );
                 },
                 pictureInPictureConfigBuilder: (index, sensor) {
-                  const width = 200.0;
+                  const width = 300.0;
                   return PictureInPictureConfig(
-                    isDraggable: false,
+                    isDraggable: true,
                     startingPosition: Offset(
-                      screenSize.width - width - 20.0 * index,
-                      screenSize.height - 356,
+                      -50,
+                      screenSize.height - 420,
                     ),
                     onTap: () {
-                      print('on preview tap');
+                      debugPrint('on preview tap');
                     },
                     sensor: sensor,
                     pictureInPictureBuilder: (preview, aspectRatio) {
@@ -139,7 +143,7 @@ class _CameraPageState extends State<CameraPage> {
                     },
                   );
                 },
-                previewDecoratorBuilder: (state, _, __) {
+                previewDecoratorBuilder: (state, _) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -302,7 +306,7 @@ class _GalleryPageState extends State<GalleryPage> {
               widget.multipleCaptureRequest.fileBySensor.keys.toList()[index];
           final file = widget.multipleCaptureRequest.fileBySensor[sensor];
           return GestureDetector(
-            onTap: () => OpenFile.open(file.path),
+            onTap: () => file.open(),
             child: file!.path.endsWith("jpg")
                 ? Image.file(
                     File(file.path),

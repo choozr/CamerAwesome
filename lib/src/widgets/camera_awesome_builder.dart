@@ -20,12 +20,14 @@ typedef CameraLayoutBuilder = Widget Function(
   CameraState state,
 
   /// [previewSize] not clipped
-  PreviewSize previewSize,
+  //PreviewSize previewSize,
 
   /// [previewRect] size might be different than [previewSize] if it has been
   /// clipped. It is often clipped in 1:1 ratio. Use it to show elements
   /// relative to the preview (inside or outside for instance)
-  Rect previewRect,
+  //Rect previewRect,
+
+  Preview preview,
 );
 
 /// Callback when a video or photo has been saved and user click on thumbnail
@@ -35,7 +37,11 @@ typedef OnMediaTap = Function(MediaCapture mediaCapture)?;
 typedef OnPermissionsResult = void Function(bool result);
 
 /// Analysis image stream listener
-typedef OnImageForAnalysis = Future Function(AnalysisImage image);
+/// The Preview object will help you to convert a point from the preview to the
+/// to your screen
+typedef OnImageForAnalysis = Future Function(
+  AnalysisImage image,
+);
 
 /// This is the entry point of the CameraAwesome plugin
 /// You can either
@@ -46,9 +52,6 @@ typedef OnImageForAnalysis = Future Function(AnalysisImage image);
 class CameraAwesomeBuilder extends StatefulWidget {
   /// Which sensors you want to use
   final SensorConfig sensorConfig;
-
-  /// TODO: DOC
-  final AwesomeFilter? filter;
 
   /// check this for more details
   /// https://api.flutter.dev/flutter/painting/BoxFit.html
@@ -102,6 +105,14 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final PictureInPictureConfigBuilder? pictureInPictureConfigBuilder;
 
+  /// THe default filter to use when the camera is started.
+  final AwesomeFilter? defaultFilter;
+
+  /// List of filters to show in the built-in interface.
+  /// (default: [awesomePresetFiltersList])
+  /// Push null to hide the filter button
+  final List<AwesomeFilter>? availableFilters;
+
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
     required this.enablePhysicalButton,
@@ -110,7 +121,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.onMediaTap,
     required this.builder,
     required this.previewFit,
-    required this.filter,
+    required this.defaultFilter,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
     this.onPreviewTapBuilder,
@@ -121,6 +132,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.previewAlignment = Alignment.center,
     this.showPreview = true,
     required this.pictureInPictureConfigBuilder,
+    this.availableFilters,
   });
 
   /// Use the camera with the built-in interface.
@@ -150,7 +162,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget? progressIndicator,
     required SaveConfig saveConfig,
     Function(MediaCapture)? onMediaTap,
-    AwesomeFilter? filter,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
@@ -164,6 +175,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
     PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
+    AwesomeFilter? defaultFilter,
+    List<AwesomeFilter>? availableFilters,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
@@ -171,7 +184,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
-          builder: (cameraModeState, previewSize, previewRect) {
+          builder: (cameraModeState, preview) {
             return AwesomeCameraLayout(
               state: cameraModeState,
               onMediaTap: onMediaTap,
@@ -180,7 +193,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
               middleContent: middleContentBuilder?.call(cameraModeState),
             );
           },
-          filter: filter,
           saveConfig: saveConfig,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
@@ -193,6 +205,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
           pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
+          defaultFilter: defaultFilter,
+          availableFilters: availableFilters ?? awesomePresetFiltersList,
         );
 
   /// 🚧 Experimental
@@ -215,6 +229,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
     PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
+    List<AwesomeFilter>? filters,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
@@ -225,7 +240,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           builder: builder,
           saveConfig: saveConfig,
           onMediaTap: null,
-          filter: filter,
+          defaultFilter: filter,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
@@ -236,6 +251,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
           pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
+          availableFilters: filters,
         );
 
   /// Use this constructor when you don't want to take pictures or record videos.
@@ -261,7 +277,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           builder: builder,
           saveConfig: null,
           onMediaTap: null,
-          filter: filter,
+          defaultFilter: filter,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
@@ -296,7 +312,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           builder: builder,
           saveConfig: null,
           onMediaTap: null,
-          filter: null,
+          defaultFilter: null,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: null,
@@ -347,8 +363,11 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        _cameraContext.state
+        _cameraContext //
+            .state
             .when(onVideoRecordingMode: (mode) => mode.stopRecording());
+        break;
+      case AppLifecycleState.hidden:
         break;
     }
     super.didChangeAppLifecycleState(state);
@@ -362,7 +381,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     _cameraContext = CameraContext.create(
       widget.sensorConfig,
       enablePhysicalButton: widget.enablePhysicalButton,
-      filter: widget.filter ?? AwesomeFilter.None,
+      filter: widget.defaultFilter ?? AwesomeFilter.None,
       initialCaptureMode: widget.saveConfig?.initialCaptureMode ??
           (widget.showPreview
               ? CaptureMode.preview
@@ -372,6 +391,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       analysisConfig: widget.imageAnalysisConfig,
       exifPreferences: widget.saveConfig?.exifPreferences ??
           ExifPreferences(saveGPSLocation: false),
+      availableFilters: widget.availableFilters,
     );
 
     // Initial CameraState is always PreparingState
@@ -402,8 +422,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 child: !widget.showPreview
                     ? widget.builder(
                         snapshot.requireData,
-                        PreviewSize(width: 0, height: 0),
-                        Rect.zero,
+                        Preview.hidden(),
                       )
                     : AwesomeCameraPreview(
                         key: _cameraPreviewKey,
