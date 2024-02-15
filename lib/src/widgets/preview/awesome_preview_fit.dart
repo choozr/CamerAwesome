@@ -150,31 +150,20 @@ class PreviewFitWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final transformController = TransformationController();
-    transformController.value = Matrix4.identity()..scale(scale);
+    final double heightScale = constraints.maxHeight / previewSize.height;
+    final double scaledPreviewWidth = previewSize.width * heightScale;
 
     return Container(
-      alignment: alignment,
+      alignment: Alignment.center,
       constraints: constraints,
-      child: SizedBox(
-        width: maxSize.width,
-        height: maxSize.height,
-        child: InteractiveViewer(
-          // key: previewWidgetKey,
-          transformationController: transformController,
-          scaleEnabled: false,
-          constrained: false,
-          panEnabled: false,
-          alignment: FractionalOffset.topLeft,
-          clipBehavior: Clip.antiAlias,
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: SizedBox(
-              width: previewSize.width,
-              height: previewSize.height,
-              child: child,
-            ),
-          ),
+      child: OverflowBox(
+        minWidth: 0.0,
+        maxWidth: double.infinity,
+        alignment: Alignment.center,
+        child: SizedBox(
+          height: constraints.maxHeight,
+          width: scaledPreviewWidth,
+          child: child,
         ),
       ),
     );
