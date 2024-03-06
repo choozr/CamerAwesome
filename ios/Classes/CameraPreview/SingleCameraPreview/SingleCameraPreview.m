@@ -56,7 +56,6 @@
   _torchMode = AVCaptureTorchModeOff;
   
   _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
-  _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
   
   // Controllers init
   _videoController = [[VideoController alloc] init];
