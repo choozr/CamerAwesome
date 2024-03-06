@@ -3,6 +3,8 @@ package com.apparence.camerawesome.cameraX
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureRequest
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -10,6 +12,7 @@ import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
@@ -166,6 +169,8 @@ data class CameraXState(
                     val imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
                         .apply {
+                             val extender = Camera2Interop.Extender(this)
++                            extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
                             //photoSize?.let { setTargetResolution(it) }
                             if (rational.denominator != rational.numerator) {
                                 setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
@@ -239,6 +244,8 @@ data class CameraXState(
                 val imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
                     .apply {
+                        val extender = Camera2Interop.Extender(this)
++                        extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
                         //photoSize?.let { setTargetResolution(it) }
                         if (rational.denominator != rational.numerator) {
                             setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
