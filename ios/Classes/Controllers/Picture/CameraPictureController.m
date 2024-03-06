@@ -89,12 +89,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   ExifContainer *container = [[ExifContainer alloc] init];
   [container addCreationDate:[NSDate date]];
   
-  // Save GPS location only if provided
-  if (_saveGPSLocation) {
-    CLLocationManager *locationManager = [CLLocationManager new];
-    CLLocation *location = [locationManager location];
-    [container addLocation:location];
-  }
+
   
   // we ignore this error because plugin can only be installed on iOS 11+
 #pragma clang diagnostic push
@@ -113,17 +108,6 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   
   float outputWidth = originalWidth;
   float outputHeight = originalHeight;
-  if (originalImageAspectRatio != _aspectRatio) {
-    if (originalImageAspectRatio > _aspectRatio) {
-      outputWidth = originalHeight * _aspectRatio;
-    } else if (originalImageAspectRatio < _aspectRatio) {
-      outputHeight = originalWidth / _aspectRatio;
-    }
-  }
-  
-  UIImage *imageConverted = [self imageByCroppingImage:image toSize:CGSizeMake(outputWidth, outputHeight)];
-  
-  image = [UIImage imageWithCGImage:[imageConverted CGImage] scale:0.0 orientation:[self getJpegOrientation]];
 
   NSData *imageWithExif = [UIImageJPEGRepresentation(image, 1.0) addExif:container];
   
