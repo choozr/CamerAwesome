@@ -170,7 +170,7 @@ data class CameraXState(
 //                .setJpegQuality(100)
                         .apply {
                              val extender = Camera2Interop.Extender(this)
-+                            extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
+                             extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
                             //photoSize?.let { setTargetResolution(it) }
                             if (rational.denominator != rational.numerator) {
                                 setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
@@ -245,7 +245,7 @@ data class CameraXState(
 //                .setJpegQuality(100)
                     .apply {
                         val extender = Camera2Interop.Extender(this)
-+                        extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
+                        extender.setCaptureRequestOption(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE, CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF)
                         //photoSize?.let { setTargetResolution(it) }
                         if (rational.denominator != rational.numerator) {
                             setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
